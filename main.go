@@ -91,5 +91,8 @@ func main() {
 
 	event := eb.EventBus{Rb: &rb, Channel: "read_service"}
 	eventHandler := &eb.FFmpegReaderResponseEvent{Scheduler: acs, Counter: &counter, Config: config, Rb: &rb}
-	event.Subscribe(eventHandler)
+	err = event.Subscribe(eventHandler)
+	if err != nil {
+		log.Println("an error occurred while listening read service event, the program is now exiting err: ", err.Error())
+	}
 }
