@@ -12,8 +12,8 @@ import (
 	"log"
 )
 
-func removeContainers(dm *dckr.AlprDockerManager) {
-	_, err := dm.RemoveContainers()
+func removeContainers(dm *dckr.AlprDockerManager, all bool) {
+	_, err := dm.RemoveContainers(all)
 	if err != nil {
 		log.Println("an error occurred while removing a container, err: ", err.Error())
 		return
@@ -50,19 +50,16 @@ func main() {
 		log.Println("docker client couldn't be created, err: " + err.Error())
 		return
 	}
+	dm := &dckr.AlprDockerManager{Client: clnt}
 	defer func() {
 		err := clnt.Close()
 		if err != nil {
 			log.Println("an error occurred during the closing docker client, err: ", err.Error())
 			return
 		}
+		removeContainers(dm, true)
 	}()
-
-	dm := &dckr.AlprDockerManager{Client: clnt}
-	removeContainers(dm)
-	defer func() {
-		removeContainers(dm)
-	}()
+	removeContainers(dm, true)
 
 	err = dm.InitImage()
 	if err != nil {

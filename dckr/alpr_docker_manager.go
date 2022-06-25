@@ -75,9 +75,9 @@ func (d *AlprDockerManager) InitImage() error {
 	return nil
 }
 
-func (d *AlprDockerManager) RemoveContainers() (int, error) {
+func (d *AlprDockerManager) RemoveContainers(all bool) (int, error) {
 	ctx := context.Background()
-	containers, err := d.Client.ContainerList(ctx, types.ContainerListOptions{All: false})
+	containers, err := d.Client.ContainerList(ctx, types.ContainerListOptions{All: all})
 	if err != nil {
 		log.Println("an error occurred while getting the container, err: ", err.Error())
 		return 0, err
