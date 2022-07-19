@@ -197,6 +197,7 @@ func (d *AlprDockerManager) ExecRun(ctr *types.Container, fileName string) (*mod
 			log.Println("an error occurred during the deserializing json result, err: ", err.Error())
 			return nil, err
 		}
+		r.FileName = fileName
 		return r, nil
 	} else {
 		log.Println("an error occurred while reading the buffer, err: ", err.Error())

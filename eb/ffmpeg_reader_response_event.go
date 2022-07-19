@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"image"
@@ -19,11 +21,9 @@ import (
 )
 
 type FFmpegReaderResponseEvent struct {
-	models.FFmpegReaderResponse
-	Counter   *utils.Counter              `json:"-"`
-	Scheduler dckr.AlprContainerScheduler `json:"-"`
-	Config    *models.Config              `json:"-"`
-	Rb        *reps.RepoBucket            `json:"-"`
+	Counter   *utils.Counter
+	Scheduler dckr.AlprContainerScheduler
+	Rb        *reps.RepoBucket
 }
 
 func createImage(b64Img *string) (string, error) {
@@ -52,13 +52,12 @@ func createImage(b64Img *string) (string, error) {
 	return baseName, nil
 }
 
-func (f *FFmpegReaderResponseEvent) Handle(event *redis.Message) error {
-	utils.DeserializeJson(event.Payload, f)
-	imageName, err := createImage(&f.Img)
-	imgPath := path.Join(utils.GetStaticDir(), imageName)
+func (f *FFmpegReaderResponseEvent) handleInternal(req *models.FFmpegReaderResponse) error {
+	imageName, err := createImage(&req.Img)
 	if err != nil {
 		return err
 	}
+	imgPath := path.Join(utils.GetStaticDir(), imageName)
 	defer func() {
 		e := os.Remove(imgPath)
 		if e != nil {
@@ -73,10 +72,14 @@ func (f *FFmpegReaderResponseEvent) Handle(event *redis.Message) error {
 	if err != nil {
 		return err
 	}
-	if result != nil && len(result.Results) > 0 && f.Config.Ai.Overlay {
+	if result != nil && len(result.Results) > 0 {
+		if result.FileName != imageName {
+			log.Println("image name mismatch: passed: ", imageName, " got: ", result.FileName)
+			return errors.New("process are shuffled")
+		}
 		var img *image.RGBA = nil
 		resp := models.AlprResponse{ImgWidth: result.ImgWidth, ImgHeight: result.ImgHeight, ProcessingTimeMs: float32(result.ProcessingTimeMs)}
-		resp.Id, resp.SourceId, resp.AiClipEnabled = uuid.New().String(), f.Source, f.AiClipEnabled
+		resp.Id, resp.SourceId, resp.AiClipEnabled = result.FileName[:len(result.FileName)-4], req.Source, req.AiClipEnabled
 		resp.CreatedAt = utils.TimeToString(time.Now(), true)
 		resp.Results = make([]*models.AlprResponseResult, 0)
 		for _, r := range result.Results {
@@ -122,10 +125,26 @@ func (f *FFmpegReaderResponseEvent) Handle(event *redis.Message) error {
 			return err
 		}
 		err = evt.Publish(buffer)
+		fmt.Println("published to alpr_service, source: " + req.Source)
 		if err != nil {
 			log.Println("an error occurred while publishing the event, err: ", err.Error())
 			return err
 		}
 	}
-	return nil
+
+	return err
+}
+
+func (f *FFmpegReaderResponseEvent) Handle(event *redis.Message) error {
+	req := &models.FFmpegReaderResponse{}
+	err := utils.DeserializeJson(event.Payload, req)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	err = f.handleInternal(req)
+	if err != nil {
+		log.Println("an error occurred while handling the event, err: ", err.Error())
+	}
+	return err
 }

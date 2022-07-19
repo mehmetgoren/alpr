@@ -19,7 +19,7 @@ func RemovePrevTempImageFiles() {
 		log.Println("an error occurred while deleting pref temp image files, err: ", err.Error())
 	}
 	for _, file := range files {
-		if len(file.Name()) == 40 { //uuid + .jpeg
+		if len(file.Name()) > 5 { //uuid + .jpeg
 			os.Remove(path.Join(root, file.Name()))
 		}
 	}

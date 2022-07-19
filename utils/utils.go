@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"log"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -10,7 +10,7 @@ import (
 
 func HandlePanic() {
 	if r := recover(); r != nil {
-		fmt.Println("RECOVER", r)
+		log.Println("RECOVER", r)
 		debug.PrintStack()
 	}
 }

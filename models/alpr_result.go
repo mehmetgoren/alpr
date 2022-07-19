@@ -7,6 +7,7 @@ type AlprResult struct {
 	ImgWidth          int     `json:"img_width"`
 	ImgHeight         int     `json:"img_height"`
 	ProcessingTimeMs  float64 `json:"processing_time_ms"`
+	FileName          string  `json:"-"`
 	RegionsOfInterest []struct {
 		X      int `json:"x"`
 		Y      int `json:"y"`

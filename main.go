@@ -58,6 +58,7 @@ func main() {
 			return
 		}
 		removeContainers(dm, true)
+		utils.RemovePrevTempImageFiles()
 	}()
 	removeContainers(dm, true)
 
@@ -87,7 +88,7 @@ func main() {
 	setUpService(redisClient, config)
 
 	event := eb.EventBus{Rb: &rb, Channel: "read_service"}
-	eventHandler := &eb.FFmpegReaderResponseEvent{Scheduler: acs, Counter: &counter, Config: config, Rb: &rb}
+	eventHandler := &eb.FFmpegReaderResponseEvent{Scheduler: acs, Counter: &counter, Rb: &rb}
 	err = event.Subscribe(eventHandler)
 	if err != nil {
 		log.Println("an error occurred while listening read service event, the process is now exiting err: ", err.Error())

@@ -3,8 +3,8 @@ package dckr
 import (
 	"alpr/models"
 	"alpr/utils"
-	"fmt"
 	"github.com/docker/docker/api/types"
+	"log"
 	"strconv"
 )
 
@@ -37,14 +37,14 @@ func (s *AlprContainerScheduler) Detect(counter *utils.Counter, fileName string)
 	containerName := containerNamePrefix + strconv.Itoa(index)
 	model, err := dm.ExecRun(s.ctrList[index], fileName)
 	if err != nil {
-		fmt.Println("an error occurred on exec_run, err: ", err.Error())
+		log.Println("an error occurred on exec_run, err: ", err.Error())
 		return nil, err
 	}
 	if len(model.Results) > 0 {
 		result := model.Results[0]
-		fmt.Println("("+containerName, ") :", result.Plate, "-", result.Confidence)
+		log.Println("("+containerName, ") :", result.Plate, "-", result.Confidence)
 	} else {
-		fmt.Println("("+containerName+") no result found for:", fileName)
+		log.Println("("+containerName+") no result found for:", fileName)
 	}
 
 	return model, nil
