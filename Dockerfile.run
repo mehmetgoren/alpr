@@ -1,0 +1,2 @@
+docker build -t alpr:v1.0.0 .
+docker run -it --restart unless-stopped --name alpr-instance --net host -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/alpr:/tmp/alpr alpr:v1.0.0

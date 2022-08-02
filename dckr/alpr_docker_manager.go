@@ -2,6 +2,7 @@ package dckr
 
 import (
 	"alpr/models"
+	"alpr/utils"
 	"context"
 	"encoding/json"
 	"github.com/docker/docker/api/types"
@@ -11,7 +12,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
 	"strings"
 )
 
@@ -84,7 +84,7 @@ func (d *AlprDockerManager) RemoveContainers(all bool) (int, error) {
 	}
 
 	count := 0
-	startWith := "/alpr"
+	startWith := "/" + containerNamePrefix
 	for _, cntr := range containers {
 		for _, cname := range cntr.Names {
 			if strings.HasPrefix(cname, startWith) {
@@ -145,12 +145,11 @@ func (d *AlprDockerManager) StartContainer(name string) (*types.Container, error
 		cc.Image = imageName
 		cc.OpenStdin = true
 
-		wd, err := os.Getwd()
 		hc := container.HostConfig{}
 		m := mount.Mount{}
 		m.Type = mount.TypeBind
 		m.ReadOnly = true
-		m.Source = path.Join(wd, "static")
+		m.Source = utils.GetTempDir()
 		m.Target = "/data"
 		hc.Mounts = []mount.Mount{m}
 		hc.RestartPolicy = container.RestartPolicy{Name: "unless-stopped"}

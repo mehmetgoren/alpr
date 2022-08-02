@@ -10,6 +10,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/go-redis/redis/v8"
 	"log"
+	"path"
 )
 
 func removeContainers(dm *dckr.AlprDockerManager, all bool) {
@@ -21,7 +22,7 @@ func removeContainers(dm *dckr.AlprDockerManager, all bool) {
 }
 
 func test(acs *dckr.AlprContainerScheduler, counter *utils.Counter) error {
-	resp, _ := acs.Detect(counter, "4.jpg")
+	resp, _ := acs.Detect(counter, path.Join("temp.jpg"))
 	jo, err := json.Marshal(resp)
 	print(jo)
 	return err
@@ -43,12 +44,15 @@ func setUpService(client *redis.Client, config *models.Config) {
 
 func main() {
 	defer utils.HandlePanic()
+
 	utils.RemovePrevTempImageFiles()
 
 	clnt, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Println("docker client couldn't be created, err: " + err.Error())
 		return
+	} else {
+		log.Println("docker client created successfully")
 	}
 	dm := &dckr.AlprDockerManager{Client: clnt}
 	defer func() {
@@ -64,6 +68,7 @@ func main() {
 
 	err = dm.InitImage()
 	if err != nil {
+		log.Println("an error occurred during the initializing docker image, err: ", err.Error())
 		return
 	}
 

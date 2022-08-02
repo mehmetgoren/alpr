@@ -14,7 +14,7 @@ type AlprContainerScheduler struct {
 	ctrList []*types.Container
 }
 
-var containerNamePrefix = "alpr"
+var containerNamePrefix = "lpr"
 
 func (s *AlprContainerScheduler) InitContainers() {
 	dm := s.Mngr

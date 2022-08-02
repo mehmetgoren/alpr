@@ -38,7 +38,7 @@ func createImage(b64Img *string) (string, error) {
 		return "", err
 	}
 	baseName := uuid.New().String() + ".jpg"
-	imageName := path.Join(utils.GetStaticDir(), baseName)
+	imageName := path.Join(utils.GetTempDir(), baseName)
 	f, err := os.Create(imageName)
 	if err != nil {
 		log.Println("an error occurred while creating an image file, err: ", err.Error())
@@ -57,7 +57,7 @@ func (f *FFmpegReaderResponseEvent) handleInternal(req *models.FFmpegReaderRespo
 	if err != nil {
 		return err
 	}
-	imgPath := path.Join(utils.GetStaticDir(), imageName)
+	imgPath := path.Join(utils.GetTempDir(), imageName)
 	defer func() {
 		e := os.Remove(imgPath)
 		if e != nil {
