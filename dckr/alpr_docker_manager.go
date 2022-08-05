@@ -132,7 +132,7 @@ func (d *AlprDockerManager) StartContainer(name string) (*types.Container, error
 		}
 	}
 	if cntr != nil {
-		if cntr.Status != "running" {
+		if cntr.State != "running" {
 			err := d.Client.ContainerStart(ctx, cntr.ID, types.ContainerStartOptions{})
 			if err != nil {
 				log.Println("an error occurred during the starting the container, err: ", err.Error())
